@@ -17,7 +17,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/post", postRoutes);
 app.use("/api/comment", commentRoutes);
-
+app.use("/api/lices", likeRoutes);
 app.listen(port, () => {
   console.log("Server is running on http://localhost:${port}");
 });

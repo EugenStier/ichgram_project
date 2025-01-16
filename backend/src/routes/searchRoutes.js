@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { searchUsers } from "../controllers/search.js";
+import { searchUsers, searchPosts } from "../controllers/search.js";
 
 const router = Router();
 router.get("/users", searchUsers);
