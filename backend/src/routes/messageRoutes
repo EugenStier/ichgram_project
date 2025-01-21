@@ -1,0 +1,22 @@
+import { loadMessages, sendMessage } from "../controllers/message.js";
+
+export const messageSocketHandler = (socket, io) => {
+  socket.on("joinRoom", ({ tergetUserId }) => {
+    const userId = socket.user._id;
+    const roomId = [userId, tergetUserId].sort().join("_");
+    socket.join(roomId);
+
+    loadMessages(userId, targetUserId, socket);
+  });
+
+  socket.on("sendMessage", (data) => {
+    const userId = socket.user._id;
+    const targetUserId = data.targetUserId;
+    const roomId = [userId, targetUserId].sort().join("_");
+    sendMessage(userId, targetUserId, roomId, data.message, io);
+  });
+
+  socket.on("dissconnect", () => {
+    console.log("User was disconnected. Connection was closed");
+  });
+};
