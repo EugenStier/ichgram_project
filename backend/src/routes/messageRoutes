@@ -1,12 +1,12 @@
 import { loadMessages, sendMessage } from "../controllers/message.js";
-
+//создаем функцию для обработки событий WebSocket
 export const messageSocketHandler = (socket, io) => {
   socket.on("joinRoom", ({ tergetUserId }) => {
-    const userId = socket.user._id;
-    const roomId = [userId, tergetUserId].sort().join("_");
-    socket.join(roomId);
+    const userId = socket.user._id; //получаем id текущего пользователя
+    const roomId = [userId, tergetUserId].sort().join("_"); // прописываем уникальный id комнаты
+    socket.join(roomId); //здесь присоединяем сокет(пользователя) к комнате с id (roomId)
 
-    loadMessages(userId, targetUserId, socket);
+    loadMessages(userId, tergetUserId, socket); //здесь вызываем ф.для загрузки сообщений м\у пользователями
   });
 
   socket.on("sendMessage", (data) => {

@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "target": "es2016", // Целевая версия JavaScript
+    "module": "commonjs", // Система модулей (CommonJS используется в Node.js)
+    "strict": true, // Включает строгий режим для TypeScript
+    "esModuleInterop": true, // Улучшает совместимость с модулями CommonJS
+    "skipLibCheck": true, // Пропускает проверку типов в библиотеках
+    "forceConsistentCasingInFileNames": true // Проверка согласованности регистра букв в именах файлов
+  }
+}
