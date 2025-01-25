@@ -1,33 +1,54 @@
-import express from "express";
-import cors from "cors";
-import "dotenv/config";
-import connectDB from "./config/connectdb";
-import authRoutes from "./routes/authRoutes.js";
-import userRoutes from "./routes/userRoutes.js";
-import searchRoutes from "./routes/searchRoutes.js";
-import postRoutes from "./routes/postRoutes.js";
-import commentRoutes from "./routes/commentRoutes.js";
-import likeRoutes from "./routes/likeRoutes.js";
-import followRoutes from "./routes/followRoutes.js";
+import bodyParser from "body-parser";
+import dotenv from "dotenv";
+import http from "http";
+import { Server } from "socket.io";
 
-//создаем приложение
-const app = express();
-const port = process.env.port; //port как аргумент для прослушки app.listen(???)
+import connectDB from "./config/db.js";
+import {
+  messageSocketHandler,
+  authenticateSocket,
+} from "./routes/messageRoutes.js";
+import { notificationSocketHandler } from "./middlewares/notificationSocketHandler.js";
+import app from "./app.js";
 
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extendet: true }));
-
+dotenv.config();
 connectDB();
-//создаем сервер
-app.use("/api/auth", authRoutes);
-app.use("/api/user", userRoutes);
-app.use("/api/search", searchRoutes);
-app.use("/api/post", postRoutes);
-app.use("/api/comment", commentRoutes);
-app.use("/api/like", likeRoutes);
-app.use("/api/follow, followRoutes");
 
-app.listen(port, () => {
-  console.log("Server is running on http://localhost:${port}");
+const server = http.createServer(app);
+
+const PORT = process.env.PORT || 5002;
+
+app.use(bodyParser.json({ limit: "10mb" }));
+app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
+
+// Инициализация WebSocket сервера
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+    credentials: true,
+    allowedHeaders: ["Authorization", "Content-Type"],
+  },
+  transports: ["websocket", "polling"],
+});
+// Сохраняем io в app для доступа из контроллеров
+app.set("io", io);
+// Middleware для WebSocket-аутентификации
+io.use((socket, next) => {
+  authenticateSocket(socket, next); // Проверка JWT токена
+});
+
+// Обработка WebSocket-соединений
+io.on("connection", (socket) => {
+  console.log("Новое WebSocket соединение");
+
+  // Подключаем обработчики сообщений
+  messageSocketHandler(socket, io);
+
+  // Подключаем обработчики уведомлений
+  notificationSocketHandler(socket, io);
+});
+
+server.listen(PORT, () => {
+  console.log(`Сервер запущен на порту ${PORT}`);
 });
